@@ -15,9 +15,9 @@ It does this by creating and managing an AWS access key, and directly storing th
 
 ```terraform
 provider "vaultsecure" {
-  // The provider also needs to authenticate with AWS, which currently 
-  // is only supported with the AWS_* environment variables.
-  // Set them correctly (i.e. your AWS_PROFILE)
+  // The provider authenticates using the standard AWS SDK credential chain.
+  // AWS_PROFILE supports IAM Identity Center sso_session profiles and
+  // profiles created by the `aws login` command.
   
   // The Vault token must be provided
   // in the VAULT_TOKEN environment variable

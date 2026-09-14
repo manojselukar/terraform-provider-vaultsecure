@@ -6,6 +6,10 @@ This provider is used to securely setup [AWS secret engines](https://www.vaultpr
 
 Check out the documentation at: https://registry.terraform.io/providers/defreng/vaultsecure/latest/docs
 
+AWS authentication uses the standard AWS SDK credential chain. This includes
+IAM Identity Center profiles using `sso_session` and profiles created by
+`aws login` using `login_session`.
+
 ## Future work
 
 Some ideas for future improvements or features 🤓 

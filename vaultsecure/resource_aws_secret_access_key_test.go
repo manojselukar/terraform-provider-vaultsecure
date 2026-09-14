@@ -43,6 +43,10 @@ func init() {
 }
 
 func TestAccResourceAwsSecretAccessKeyType_basic(t *testing.T) {
+	if os.Getenv(resource.EnvTfAcc) == "" {
+		t.Skip("set TF_ACC to run acceptance tests")
+	}
+
 	iamUsername := testAccCreateIAMUser(t)
 	awsSecretEnginePath := testAccCreateAWSSecretEngine(t)
 

@@ -3,6 +3,8 @@ package vaultsecure
 import (
 	"context"
 	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -54,7 +56,7 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 
 	// Load AWS Configuration
 	// ... as we only access global AWS services (IAM, STS), we don't care about the region
-	cfg, err := awsConfig.LoadDefaultConfig(ctx)
+	cfg, err := loadAWSConfig(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create AWS configuration",
@@ -83,6 +85,10 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 	if !config.VaultNamespace.Null {
 		p.vault.SetNamespace(config.VaultNamespace.Value)
 	}
+}
+
+func loadAWSConfig(ctx context.Context) (aws.Config, error) {
+	return awsConfig.LoadDefaultConfig(ctx)
 }
 
 // GetResources - Defines provider resources
