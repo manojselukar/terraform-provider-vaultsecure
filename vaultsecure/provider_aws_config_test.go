@@ -21,10 +21,15 @@ region = us-west-2
 sso_start_url = https://example.awsapps.com/start
 sso_region = us-west-2
 `
-	writeAWSConfig(t, configPath, config)
-	configureAWSTestEnvironment(t, configPath, "test-sso")
+	if err := os.WriteFile(configPath, []byte(config), 0o600); err != nil {
+		t.Fatalf("write AWS config: %v", err)
+	}
 
-	cfg, err := loadAWSConfig(context.Background())
+	t.Setenv("AWS_CONFIG_FILE", configPath)
+	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join(t.TempDir(), "credentials"))
+	t.Setenv("AWS_EC2_METADATA_DISABLED", "true")
+
+	cfg, err := loadAWSConfig(context.Background(), "test-sso")
 	if err != nil {
 		t.Fatalf("load modern IAM Identity Center profile: %v", err)
 	}
@@ -37,14 +42,19 @@ sso_region = us-west-2
 func TestLoadAWSConfigSupportsAWSLoginProfile(t *testing.T) {
 	configPath := filepath.Join(t.TempDir(), "config")
 	config := `[profile test-login]
-login_session = arn:aws:sts::123456789012:role/AdministratorAccess
+login_session = arn:aws:sts::123456789012:assumed-role/AdministratorAccess/example
 region = us-west-2
 `
-	writeAWSConfig(t, configPath, config)
-	configureAWSTestEnvironment(t, configPath, "test-login")
-	t.Setenv("AWS_LOGIN_CACHE_DIRECTORY", t.TempDir())
+	if err := os.WriteFile(configPath, []byte(config), 0o600); err != nil {
+		t.Fatalf("write AWS config: %v", err)
+	}
 
-	cfg, err := loadAWSConfig(context.Background())
+	t.Setenv("AWS_CONFIG_FILE", configPath)
+	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join(t.TempDir(), "credentials"))
+	t.Setenv("AWS_LOGIN_CACHE_DIRECTORY", t.TempDir())
+	t.Setenv("AWS_EC2_METADATA_DISABLED", "true")
+
+	cfg, err := loadAWSConfig(context.Background(), "test-login")
 	if err != nil {
 		t.Fatalf("load aws login profile: %v", err)
 	}
@@ -52,21 +62,6 @@ region = us-west-2
 		t.Fatalf("expected profile region us-west-2, got %q", cfg.Region)
 	}
 	assertCredentialSource(t, cfg.Credentials, aws.CredentialSourceProfileLogin)
-}
-
-func writeAWSConfig(t *testing.T, path, config string) {
-	t.Helper()
-	if err := os.WriteFile(path, []byte(config), 0o600); err != nil {
-		t.Fatalf("write AWS config: %v", err)
-	}
-}
-
-func configureAWSTestEnvironment(t *testing.T, configPath, profile string) {
-	t.Helper()
-	t.Setenv("AWS_CONFIG_FILE", configPath)
-	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join(t.TempDir(), "credentials"))
-	t.Setenv("AWS_PROFILE", profile)
-	t.Setenv("AWS_EC2_METADATA_DISABLED", "true")
 }
 
 func assertCredentialSource(t *testing.T, provider aws.CredentialsProvider, want aws.CredentialSource) {

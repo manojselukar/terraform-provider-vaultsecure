@@ -27,6 +27,11 @@ type provider struct {
 func (p *provider) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
 		Attributes: map[string]tfsdk.Attribute{
+			"aws_profile": {
+				Type:        types.StringType,
+				Optional:    true,
+				Description: "AWS shared configuration profile, including IAM Identity Center (SSO) profiles. AWS_PROFILE is used when omitted.",
+			},
 			"vault_address": {
 				Type:     types.StringType,
 				Optional: true,
@@ -41,6 +46,7 @@ func (p *provider) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics)
 
 // Provider schema struct
 type providerData struct {
+	AwsProfile     types.String `tfsdk:"aws_profile"`
 	VaultAddress   types.String `tfsdk:"vault_address"`
 	VaultNamespace types.String `tfsdk:"vault_namespace"`
 }
@@ -56,7 +62,11 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 
 	// Load AWS Configuration
 	// ... as we only access global AWS services (IAM, STS), we don't care about the region
-	cfg, err := loadAWSConfig(ctx)
+	awsProfile := ""
+	if !config.AwsProfile.Null && !config.AwsProfile.Unknown {
+		awsProfile = config.AwsProfile.Value
+	}
+	cfg, err := loadAWSConfig(ctx, awsProfile)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to create AWS configuration",
@@ -87,8 +97,12 @@ func (p *provider) Configure(ctx context.Context, req tfsdk.ConfigureProviderReq
 	}
 }
 
-func loadAWSConfig(ctx context.Context) (aws.Config, error) {
-	return awsConfig.LoadDefaultConfig(ctx)
+func loadAWSConfig(ctx context.Context, profile string) (aws.Config, error) {
+	if profile == "" {
+		return awsConfig.LoadDefaultConfig(ctx)
+	}
+
+	return awsConfig.LoadDefaultConfig(ctx, awsConfig.WithSharedConfigProfile(profile))
 }
 
 // GetResources - Defines provider resources

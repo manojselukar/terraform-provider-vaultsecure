@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/defreng/terraform-provider-vaultsecure/vaultsecure"
+
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/manojselukar/terraform-provider-vaultsecure/vaultsecure"
 )
 
 func main() {

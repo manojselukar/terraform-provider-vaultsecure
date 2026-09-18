@@ -5,7 +5,7 @@ terraform {
       version = "~> 4.2"
     }
     vaultsecure = {
-      source = "defreng/vaultsecure"
+      source = "manojselukar/vaultsecure"
     }
     vault = {
       source  = "hashicorp/vault"

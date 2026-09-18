@@ -2,7 +2,7 @@
 page_title: "Provider: VaultSecure"
 subcategory: ""
 description: |-
-Set Vault AWS secret backend root credentials without leaking them into the Terraform state
+  Set Vault AWS secret backend root credentials without leaking them into the Terraform state
 ---
 
 # VaultSecure Provider
@@ -15,9 +15,9 @@ It does this by creating and managing an AWS access key, and directly storing th
 
 ```terraform
 provider "vaultsecure" {
-  // The provider authenticates using the standard AWS SDK credential chain.
-  // AWS_PROFILE supports IAM Identity Center sso_session profiles and
-  // profiles created by the `aws login` command.
+  // Optional. Supports IAM Identity Center sso_session profiles and
+  // profiles created by aws login. AWS_PROFILE is used when omitted.
+  aws_profile = "my-sso-profile"
   
   // The Vault token must be provided
   // in the VAULT_TOKEN environment variable
@@ -29,5 +29,6 @@ provider "vaultsecure" {
 
 ### Optional
 
+- **aws_profile** (String, Optional) AWS shared configuration profile. Modern IAM Identity Center profiles using `sso_session` and profiles created by `aws login` using `login_session` are supported. Defaults to `AWS_PROFILE` and then the AWS SDK default credential chain.
 - **vault_address** (String, Optional) The URL of the Vault server (defaults to `https://127.0.0.1:8200`), can also be set via the `VAULT_ADDR` environment variable.
 - **vault_namespace** (String, Optional) Vault namespace that should be used (defaults to `null`), can also be set via the `VAULT_NAMESPACE` environment variable.
