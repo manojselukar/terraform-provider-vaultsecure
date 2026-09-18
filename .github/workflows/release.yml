@@ -34,10 +34,11 @@ jobs:
           cache: true
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
+          fingerprint: "8F4C1C749F6B805AF57C415208D83F9773EF5C60"
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
